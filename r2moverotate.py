@@ -17,7 +17,7 @@
 import rclpy
 from rclpy.node import Node
 from nav_msgs.msg import Odometry
-from geometry_msgs.msg import Twist
+from geometry_msgs.msg import TwistStamped
 import math
 import cmath
 import numpy as np
@@ -65,7 +65,7 @@ def isnumber(value):
 class Mover(Node):
     def __init__(self):
         super().__init__('moverotate')
-        self.publisher_ = self.create_publisher(Twist,'cmd_vel',10)
+        self.publisher_ = self.create_publisher(TwistStamped,'cmd_vel',10)
         # self.get_logger().info('Created publisher')
         self.subscription = self.create_subscription(
             Odometry,
@@ -92,7 +92,7 @@ class Mover(Node):
     def rotatebot(self, rot_angle):
         # self.get_logger().info('In rotatebot')
         # create Twist object
-        twist = Twist()
+        twist_stamped = TwistStamped()
         
         # get current yaw angle
         current_yaw = self.yaw
@@ -111,11 +111,11 @@ class Mover(Node):
         # get the sign of the imaginary component to figure out which way we have to turn
         c_change_dir = np.sign(c_change.imag)
         # set linear speed to zero so the TurtleBot rotates on the spot
-        twist.linear.x = 0.0
+        twist_stamped.twist.linear.x = 0.0
         # set the direction to rotate
-        twist.angular.z = c_change_dir * speedchange
+        twist_stamped.twist.angular.z = c_change_dir * speedchange
         # start rotation
-        self.publisher_.publish(twist)
+        self.publisher_.publish(twist_stamped)
 
         # we will use the c_dir_diff variable to see if we can stop rotating
         c_dir_diff = c_change_dir
@@ -137,13 +137,13 @@ class Mover(Node):
 
         self.get_logger().info('End Yaw: %f' % math.degrees(current_yaw))
         # set the rotation speed to 0
-        twist.angular.z = 0.0
+        twist_stamped.angular.z = 0.0
         # stop the rotation
-        self.publisher_.publish(twist)
+        self.publisher_.publish(twist_stamped)
 
 # function to read keyboard input
     def readKey(self):
-        twist = Twist()
+        twist_stamped = TwistStamped()
         try:
             while True:
                 # get keyboard input
@@ -158,27 +158,27 @@ class Mover(Node):
                     # check which key was entered
                     if cmd_char == 's':
                         # stop moving
-                        twist.linear.x = 0.0
-                        twist.angular.z = 0.0
+                        twist_stamped.twist.linear.x = 0.0
+                        twist_stamped.twist.angular.z = 0.0
                     elif cmd_char == 'w':
                         # move forward
-                        twist.linear.x += speedchange
-                        twist.angular.z = 0.0
+                        twist_stamped.twist.linear.x += speedchange
+                        twist_stamped.twist.angular.z = 0.0
                     elif cmd_char == 'x':
                         # move backward
-                        twist.linear.x -= speedchange
-                        twist.angular.z = 0.0
+                        twist_stamped.twist.linear.x -= speedchange
+                        twist_stamped.twist.angular.z = 0.0
                     elif cmd_char == 'a':
                         # turn counter-clockwise
-                        twist.linear.x = 0.0
-                        twist.angular.z += rotatechange
+                        twist_stamped.twist.linear.x = 0.0
+                        twist_stamped.twist.angular.z += rotatechange
                     elif cmd_char == 'd':
                         # turn clockwise
-                        twist.linear.x = 0.0
-                        twist.angular.z -= rotatechange
+                        twist_stamped.twist.linear.x = 0.0
+                        twist_stamped.twist.angular.z -= rotatechange
                         
                     # start the movement
-                    self.publisher_.publish(twist)
+                    self.publisher_.publish(twist_stamped)
     
         except Exception as e:
             print(e)
@@ -186,9 +186,9 @@ class Mover(Node):
 		# Ctrl-c detected
         finally:
         	# stop moving
-            twist.linear.x = 0.0
-            twist.angular.z = 0.0
-            self.publisher_.publish(twist)
+            twist_stamped.twist.linear.x = 0.0
+            twist_stamped.twist.angular.z = 0.0
+            self.publisher_.publish(twist_stamped)
 
 
 def main(args=None):
