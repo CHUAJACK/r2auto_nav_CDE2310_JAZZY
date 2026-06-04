@@ -26,11 +26,11 @@ speedchange = 0.05
 class Mover(Node):
     def __init__(self):
         super().__init__('mover')
-        self.publisher_ = self.create_publisher(geometry_msgs.msg.Twist,'cmd_vel',10)
+        self.publisher_ = self.create_publisher(geometry_msgs.msg.TwistStamped,'cmd_vel',10)
 
 # function to read keyboard input
     def readKey(self):
-        twist = geometry_msgs.msg.Twist()
+        twist_stamped = geometry_msgs.msg.TwistStamped()
         try:
             while True:
                 # get keyboard input
@@ -39,27 +39,27 @@ class Mover(Node):
                 # check which key was entered
                 if cmd_char == 's':
                     # stop moving
-                    twist.linear.x = 0.0
-                    twist.angular.z = 0.0
+                    twist_stamped.twist.linear.x = 0.0
+                    twist_stamped.twist.angular.z = 0.0
                 elif cmd_char == 'w':
                     # move forward
-                    twist.linear.x += speedchange
-                    twist.angular.z = 0.0
+                    twist_stamped.twist.linear.x += speedchange
+                    twist_stamped.twist.angular.z = 0.0
                 elif cmd_char == 'x':
                     # move backward
-                    twist.linear.x -= speedchange
-                    twist.angular.z = 0.0
+                    twist_stamped.twist.linear.x -= speedchange
+                    twist_stamped.twist.angular.z = 0.0
                 elif cmd_char == 'a':
                     # turn counter-clockwise
-                    twist.linear.x = 0.0
-                    twist.angular.z += rotatechange
+                    twist_stamped.twist.linear.x = 0.0
+                    twist_stamped.twist.angular.z += rotatechange
                 elif cmd_char == 'd':
                     # turn clockwise
-                    twist.linear.x = 0.0
-                    twist.angular.z -= rotatechange
+                    twist_stamped.twist.linear.x = 0.0
+                    twist_stamped.twist.angular.z -= rotatechange
 
                 # start the movement
-                self.publisher_.publish(twist)
+                self.publisher_.publish(twist_stamped)
                 
         except Exception as e:
             print(e)
@@ -67,9 +67,9 @@ class Mover(Node):
 		# Ctrl-c detected
         finally:
         	# stop moving
-            twist.linear.x = 0.0
-            twist.angular.z = 0.0
-            self.publisher_.publish(twist)
+            twist_stamped.twist.linear.x = 0.0
+            twist_stamped.twist.angular.z = 0.0
+            self.publisher_.publish(twist_stamped)
 
 
 def main(args=None):
