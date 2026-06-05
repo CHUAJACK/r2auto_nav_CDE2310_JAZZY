@@ -15,7 +15,7 @@
 import rclpy
 from rclpy.node import Node
 from nav_msgs.msg import Odometry
-from geometry_msgs.msg import Twist
+from geometry_msgs.msg import TwistStamped
 from rclpy.qos import qos_profile_sensor_data
 from sensor_msgs.msg import LaserScan
 from nav_msgs.msg import OccupancyGrid
@@ -63,7 +63,7 @@ class AutoNav(Node):
         super().__init__('auto_nav')
         
         # create publisher for moving TurtleBot
-        self.publisher_ = self.create_publisher(Twist,'cmd_vel',10)
+        self.publisher_ = self.create_publisher(TwistStamped,'cmd_vel',10)
         # self.get_logger().info('Created publisher')
         
         # create subscription to track orientation
@@ -138,7 +138,7 @@ class AutoNav(Node):
     def rotatebot(self, rot_angle):
         # self.get_logger().info('In rotatebot')
         # create Twist object
-        twist = Twist()
+        twist_stamped = TwistStamped()
         
         # get current yaw angle
         current_yaw = self.yaw
@@ -157,11 +157,11 @@ class AutoNav(Node):
         # get the sign of the imaginary component to figure out which way we have to turn
         c_change_dir = np.sign(c_change.imag)
         # set linear speed to zero so the TurtleBot rotates on the spot
-        twist.linear.x = 0.0
+        twist_stamped.twist.linear.x = 0.0
         # set the direction to rotate
-        twist.angular.z = c_change_dir * rotatechange
+        twist_stamped.twist.angular.z = c_change_dir * rotatechange
         # start rotation
-        self.publisher_.publish(twist)
+        self.publisher_.publish(twist_stamped)
 
         # we will use the c_dir_diff variable to see if we can stop rotating
         c_dir_diff = c_change_dir
@@ -183,9 +183,9 @@ class AutoNav(Node):
 
         self.get_logger().info('End Yaw: %f' % math.degrees(current_yaw))
         # set the rotation speed to 0
-        twist.angular.z = 0.0
+        twist_stamped.twist.angular.z = 0.0
         # stop the rotation
-        self.publisher_.publish(twist)
+        self.publisher_.publish(twist_stamped)
 
 
     def pick_direction(self):
@@ -203,23 +203,23 @@ class AutoNav(Node):
 
         # start moving
         self.get_logger().info('Start moving')
-        twist = Twist()
-        twist.linear.x = speedchange
-        twist.angular.z = 0.0
+        twist_stamped = TwistStamped()
+        twist_stamped.twist.linear.x = speedchange
+        twist_stamped.twist.angular.z = 0.0
         # not sure if this is really necessary, but things seem to work more
         # reliably with this
         time.sleep(1)
-        self.publisher_.publish(twist)
+        self.publisher_.publish(twist_stamped)
 
 
     def stopbot(self):
         self.get_logger().info('In stopbot')
         # publish to cmd_vel to move TurtleBot
-        twist = Twist()
-        twist.linear.x = 0.0
-        twist.angular.z = 0.0
+        twist_stamped = TwistStamped()
+        twist_stamped.twist.linear.x = 0.0
+        twist_stamped.twist.angular.z = 0.0
         # time.sleep(1)
-        self.publisher_.publish(twist)
+        self.publisher_.publish(twist_stamped)
 
 
     def mover(self):
